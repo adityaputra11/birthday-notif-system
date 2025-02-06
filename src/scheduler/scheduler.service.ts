@@ -11,7 +11,6 @@ export class SchedulerService {
 
   async scheduleBirthdayMessage(user: Users) {
     // Get user's birthday time in their local timezone
-    console.log({ user })
     const now = moment();
     const birthdayTime = "09:00"; // Time to send birthday message
 
