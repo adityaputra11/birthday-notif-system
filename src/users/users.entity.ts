@@ -15,7 +15,7 @@ export class Users{
     email: string
 
     @Column({type: 'date',name:'birthday'})
-    birthday: Date;
+    birthday: string;
 
     @Column({name:'timezone'})
     timezone: string;
