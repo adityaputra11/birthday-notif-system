@@ -11,7 +11,7 @@ export class Users{
     @Column({name:'lastname'})
     lastname: string;
 
-    @Column({name:'email'})
+    @Column({name:'email', nullable:false})
     email: string
 
     @Column({type: 'date',name:'birthday'})

@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { EmailData } from './config.type';
+
 
 @Injectable()
 export class EmailService {
   constructor(private readonly httpService: HttpService) {}
 
-  async sendEmail(): Promise<any> {
+  async sendEmail(data:EmailData): Promise<any> {
     const url = 'https://email-service.digitalenvision.com.au/send-email';
-    const data = {
-      email: 'test@digitalenvision.com.au',
-      message: 'Hi, nice to meet you.'
-    };
     const headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json'

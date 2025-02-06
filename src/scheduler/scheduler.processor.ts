@@ -1,20 +1,45 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
+import { EmailService } from 'src/config/email.service';
+import { EmailData } from 'src/config/config.type';
 
 @Processor('schedulerQueue')
 export class SchedulerProcessor extends WorkerHost {
+  constructor(private readonly emailService:EmailService){
+    super();
+  }
   async process(job: Job<any, any, string>): Promise<any> {
     if (job.name.includes('birthday')){
         return this.handleSendBirthdayMessage(job);
     }
   }
 
-  
+  @OnWorkerEvent('completed')
+  onProgress(job: Job) {
+    const { id, name } = job;
+    console.log(`Job id: ${id}, name: ${name} completes ${name}%`);
+  }
+
+  @OnWorkerEvent('failed')
+  onFailed(job: Job) {
+    const { id, name } = job;
+    console.log(`Job id: ${id}, name: ${name} failed ${name}%`);
+  }
+
+
+  @OnWorkerEvent('closed')
+  onClosed(job: Job) {
+    const { id, name } = job;
+    console.log(`Job id: ${id}, name: ${name} closed ${name}%`);
+  }
 
   private async handleSendBirthdayMessage(job: Job) {
-    const { userId } = job.data;
-    console.log(`Mengirim pesan ulang tahun ke User ID: ${userId}`);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const { userId, email, name } = job.data;
+    const birthdayData:EmailData={
+      email,
+      message:`Hey, ${name} it’s your birthday`
+    }
+    await this.emailService.sendEmail(birthdayData)
     console.log(`Pesan ulang tahun untuk User ID: ${userId} berhasil dikirim.`);
   }
 }

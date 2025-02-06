@@ -6,32 +6,40 @@ import { Users } from 'src/users/users.entity';
 
 @Injectable()
 export class SchedulerService {
-    constructor(@InjectQueue("schedulerQueue") private schedulerQueue:Queue){}
-    
+  constructor(@InjectQueue("schedulerQueue") private schedulerQueue: Queue) { }
 
-     async scheduleBirthdayMessage(user: Users) {
-        const now = moment();
-        const nextBirthday = moment.tz(`${moment().year()}-${user.birthday.toString().substring(5)}`, user.timezone);
-        
-        if (nextBirthday.isBefore(moment())) {
-          nextBirthday.add(1, 'year');
-        }
-    
-        nextBirthday.hour(9).minute(0).second(0);
-        const delay = nextBirthday.valueOf() - now.valueOf();
 
-        
-        await this.schedulerQueue.add(
-          `birthday-${user.id}`,
-          { userId: user.id },
-          { delay, repeat: { every: 365 * 24 * 60 * 60 * 1000 } }
-        );
+  async scheduleBirthdayMessage(user: Users) {
+    const now = moment();
+    let nextBirthdayLocal = moment.tz(`${now.year()}-${user.birthday.toString().substring(5)} 09:00`, user.timezone);
 
-        console.log(`✅ Job berhasil ditambahkan ke queue!`); // Debug log
+    const serverTimezone = moment.tz.guess();
+    const nextBirthdayServer = nextBirthdayLocal.clone().tz(serverTimezone, true); 
+    const pattern = `${nextBirthdayServer.second()} ${nextBirthdayServer.minute()} ${nextBirthdayServer.hour()} ${nextBirthdayServer.date()} ${nextBirthdayServer.month() + 1} *`;
+
+    await this.schedulerQueue.upsertJobScheduler(
+      `birthday-${user.id}`,
+      { pattern, },
+      {
+        name: 'send-birthday-message',
+        data: {
+          userId: user.id,
+          email: user.email,
+          name: `${user.firstname} ${user.lastname}`,
+        },
+        opts: {
+          priority: 1,
+        },
       }
-    
-       async cancelExistingJob(userId: number) {
-        const job = await this.schedulerQueue.getJob(`birthday-${userId}`);
-        await job.remove();
-      }
+    );
+
+
+    console.log(`✅ Job berhasil ditambahkan ke queue!`); // Debug log
+  }
+
+  async cancelBirthdayScheduler(userId: number) {
+    const jobKey = `birthday-${userId}`
+    const result = await this.schedulerQueue.removeJobScheduler(jobKey)
+    return result
+  }
 }

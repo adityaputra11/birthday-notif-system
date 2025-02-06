@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsDateString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsDateString, IsOptional, IsEmail, IsTimeZone } from 'class-validator';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -11,11 +11,17 @@ export class CreateUserDto {
   lastname: string;
 
   @IsNotEmpty()
+  @IsString()
+  @IsEmail()
+  email: string
+
+  @IsNotEmpty()
   @IsDateString()
   birthday: string; // Format: YYYY-MM-DD
 
   @IsNotEmpty()
   @IsString()
+  @IsTimeZone()
   timezone: string; // Contoh: "America/New_York"
 }
 

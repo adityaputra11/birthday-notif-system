@@ -3,10 +3,13 @@ import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SchedulerService } from './scheduler.service';
 import { SchedulerProcessor } from './scheduler.processor';
+import { EmailService } from 'src/config/email.service';
+import { DatabaseModule } from 'src/config/database.module';
 
 @Module({
   imports: [
     ConfigModule,
+    DatabaseModule,
     BullModule.registerQueueAsync({
       name: 'schedulerQueue',
       imports: [ConfigModule],
@@ -19,7 +22,7 @@ import { SchedulerProcessor } from './scheduler.processor';
       inject: [ConfigService],
     }),
   ],
-  providers: [SchedulerService, SchedulerProcessor],
+  providers: [SchedulerService, SchedulerProcessor, EmailService],
   exports: [SchedulerService, BullModule],
 })
 export class SchedulerModule {}

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './users.dto';
 import { Users } from './users.entity';
@@ -27,6 +27,12 @@ export class UsersController {
         await this.shedulerService.scheduleBirthdayMessage(updatedUser)
         return updatedUser
     }
+    @Delete(":id")
+    async deleteUser(@Param('id') id:number):Promise<any>{
+        const deletedUser = await this.userService.deleteUser(id)
+        await this.shedulerService.cancelBirthdayScheduler(id)
+        return deletedUser
+    }
 
     @Get()
     async getUsers(): Promise<Users[]> {
@@ -35,7 +41,6 @@ export class UsersController {
 
     @Get(":id")
     async getUserById(@Param('id') id: number): Promise<Users> {
-        await this.shedulerService.cancelExistingJob(id)
         return await this.userService.getUserById(id);
     }
 }

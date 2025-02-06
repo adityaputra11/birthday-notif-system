@@ -2,9 +2,12 @@ import { RedisModule } from "@nestjs-modules/ioredis";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
+import { EmailService } from "./email.service";
+import { HttpModule, HttpService } from "@nestjs/axios";
 
 @Module({
     imports:[
+        HttpModule,
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule], 
             inject: [ConfigService],
@@ -38,7 +41,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
             }),
           }),
     ],
-    providers:[],
-    exports:[RedisModule, TypeOrmModule],
+    providers:[EmailService],
+    exports:[RedisModule, TypeOrmModule, HttpModule],
 })
 export class DatabaseModule {}
