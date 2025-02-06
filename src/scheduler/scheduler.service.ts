@@ -11,12 +11,11 @@ export class SchedulerService {
 
   async scheduleBirthdayMessage(user: Users) {
     // Get user's birthday time in their local timezone
-    console.log({ user })
     const now = moment();
     const birthdayTime = "09:00"; // Time to send birthday message
 
     // Parse birthday in user's timezone
-    const birthdayThisYearStr = `${now.year()}-${user.birthday} ${birthdayTime}`;
+    const birthdayThisYearStr = `${now.year()}-${user.birthday.substring(5)} ${birthdayTime}`;
     const nextBirthdayLocal = moment.tz(birthdayThisYearStr, 'YYYY-MM-DD HH:mm', user.timezone);
     if (nextBirthdayLocal.isBefore(now)) {
       nextBirthdayLocal.add(1, 'year');
@@ -41,6 +40,11 @@ export class SchedulerService {
         },
         opts: {
           priority: 1,
+          attempts:30,
+          backoff:{
+            type:'exponential',
+            delay: 60 * 1000 // 60 s delay exponential retry when failed
+          }
         },
       }
     );
