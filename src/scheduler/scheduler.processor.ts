@@ -34,12 +34,11 @@ export class SchedulerProcessor extends WorkerHost {
   }
 
   private async handleSendBirthdayMessage(job: Job) {
-    const { userId, email, name } = job.data;
+    const { email, name } = job.data;
     const birthdayData:EmailData={
       email,
       message:`Hey, ${name} it’s your birthday`
     }
     await this.emailService.sendEmail(birthdayData)
-    console.log(`Pesan ulang tahun untuk User ID: ${userId} berhasil dikirim.`);
   }
 }
