@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
+import { BadGatewayException, Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './users.dto';
 import { Users } from './users.entity';
@@ -20,7 +20,7 @@ export class UsersController {
     }
 
     @Put(":id")
-    async updateUser(@Body() dto: UpdateUserDto, @Param('id') id: number): Promise<Users> {
+    async updateUser(@Body() dto: UpdateUserDto, @Param('id',ParseIntPipe) id: number): Promise<Users> {
         const user = plainToInstance(Users, dto);
         const existingUser = await this.getUserById(id)
         if(existingUser ==null){
@@ -32,12 +32,15 @@ export class UsersController {
         return updatedUser
     }
     @Delete(":id")
-    async deleteUser(@Param('id') id:number):Promise<any>{
+    async deleteUser(@Param('id',ParseIntPipe) id:number):Promise<any>{
         const existingUser = await this.getUserById(id)
         if(existingUser ==null){
             throw new NotFoundException("User doesn't exist")
         }
         const deleteResult = await this.userService.deleteUser(id)
+        if(!deleteResult){
+            throw new BadGatewayException("Cannot deleting user")
+        }
         this.shedulerService.cancelBirthdayScheduler(id)
         return {message:"user deleted", success: deleteResult}
     }
@@ -48,7 +51,7 @@ export class UsersController {
     }
 
     @Get(":id")
-    async getUserById(@Param('id') id: number): Promise<Users> {
+    async getUserById(@Param('id',ParseIntPipe) id: number): Promise<Users> {
         return await this.userService.getUserById(id);
     }
 }

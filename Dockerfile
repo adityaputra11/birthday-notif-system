@@ -1,23 +1,26 @@
-# Gunakan Node.js sebagai base image
-FROM node:18
+# Use the official Node.js image as the base image
+FROM node:20
 
-# Set direktori kerja di dalam container
+# Set the working directory inside the container
 WORKDIR /usr/src/app
 
-# Copy package.json, yarn.lock
+# Copy package.json and package-lock.json to the working directory
 COPY package.json yarn.lock ./
 
-# Install dependencies menggunakan Yarn
+# Install the application dependencies
 RUN yarn install --frozen-lockfile
 
-# Copy semua file ke dalam container
+# installing pg
+RUN yarn list --depth=0 | grep pg || yarn add pg
+
+# Copy the rest of the application files
 COPY . .
 
-# Build aplikasi (jika menggunakan TypeScript)
+# Build the NestJS application
 RUN yarn build
 
-# Expose port aplikasi
-EXPOSE 3000
+# Expose the application port
+EXPOSE 4444
 
-# Jalankan aplikasi
-CMD ["yarn", "start:prod"]
+# Command to run the application
+CMD ["node", "dist/main"]
