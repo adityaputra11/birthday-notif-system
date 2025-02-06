@@ -41,6 +41,11 @@ export class SchedulerService {
         },
         opts: {
           priority: 1,
+          attempts:30,
+          backoff:{
+            type:'exponential',
+            delay: 60 * 1000 // 60 s delay exponential retry when failed
+          }
         },
       }
     );
