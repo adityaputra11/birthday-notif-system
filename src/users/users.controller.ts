@@ -15,7 +15,7 @@ export class UsersController {
     async createUser(@Body() dto: CreateUserDto): Promise<Users> {
         const user = plainToInstance(Users, dto);
         const savedUser = await this.userService.createUser(user);
-        await this.shedulerService.scheduleBirthdayMessage(savedUser)
+        this.shedulerService.scheduleBirthdayMessage(savedUser)
         return savedUser
     }
 

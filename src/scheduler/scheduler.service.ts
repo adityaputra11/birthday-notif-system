@@ -15,7 +15,7 @@ export class SchedulerService {
     const birthdayTime = "09:00"; // Time to send birthday message
 
     // Parse birthday in user's timezone
-    const birthdayThisYearStr = `${now.year()}-${user.birthday} ${birthdayTime}`;
+    const birthdayThisYearStr = `${now.year()}-${user.birthday.substring(5)} ${birthdayTime}`;
     const nextBirthdayLocal = moment.tz(birthdayThisYearStr, 'YYYY-MM-DD HH:mm', user.timezone);
     if (nextBirthdayLocal.isBefore(now)) {
       nextBirthdayLocal.add(1, 'year');
