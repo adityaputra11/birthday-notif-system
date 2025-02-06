@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './users.dto';
 import { Users } from './users.entity';
@@ -22,16 +22,24 @@ export class UsersController {
     @Put(":id")
     async updateUser(@Body() dto: UpdateUserDto, @Param('id') id: number): Promise<Users> {
         const user = plainToInstance(Users, dto);
+        const existingUser = await this.getUserById(id)
+        if(existingUser ==null){
+            throw new NotFoundException("User doesn't exist")
+        }
         user.id = id;
         const updatedUser = await this.userService.updateUser(user);
-        await this.shedulerService.scheduleBirthdayMessage(updatedUser)
+        this.shedulerService.scheduleBirthdayMessage(updatedUser)
         return updatedUser
     }
     @Delete(":id")
     async deleteUser(@Param('id') id:number):Promise<any>{
-        const deletedUser = await this.userService.deleteUser(id)
-        await this.shedulerService.cancelBirthdayScheduler(id)
-        return deletedUser
+        const existingUser = await this.getUserById(id)
+        if(existingUser ==null){
+            throw new NotFoundException("User doesn't exist")
+        }
+        const deleteResult = await this.userService.deleteUser(id)
+        this.shedulerService.cancelBirthdayScheduler(id)
+        return {message:"user deleted", success: deleteResult}
     }
 
     @Get()

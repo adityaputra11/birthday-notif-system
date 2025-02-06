@@ -28,8 +28,12 @@ export class UsersService {
         return updatedUser;
     }
 
-    async deleteUser(id: number): Promise<void> {
-        await this.usersRepository.delete(id);
+    async deleteUser(id: number): Promise<boolean> {
+       const deletedUser = await this.usersRepository.delete(id);
+       if (deletedUser.affected>0){
+            return true
+       }
+       return false
     }
     
     }
