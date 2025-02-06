@@ -10,22 +10,34 @@ export class SchedulerService {
 
 
   async scheduleBirthdayMessage(user: Users) {
+    // Get user's birthday time in their local timezone
+    console.log({ user })
     const now = moment();
-    let nextBirthdayLocal = moment.tz(`${now.year()}-${user.birthday.toString().substring(5)} 09:00`, user.timezone);
+    const birthdayTime = "09:00"; // Time to send birthday message
 
-    const serverTimezone = moment.tz.guess();
-    const nextBirthdayServer = nextBirthdayLocal.clone().tz(serverTimezone, true); 
-    const pattern = `${nextBirthdayServer.second()} ${nextBirthdayServer.minute()} ${nextBirthdayServer.hour()} ${nextBirthdayServer.date()} ${nextBirthdayServer.month() + 1} *`;
+    // Parse birthday in user's timezone
+    const birthdayThisYearStr = `${now.year()}-${user.birthday} ${birthdayTime}`;
+    const nextBirthdayLocal = moment.tz(birthdayThisYearStr, 'YYYY-MM-DD HH:mm', user.timezone);
+    if (nextBirthdayLocal.isBefore(now)) {
+      nextBirthdayLocal.add(1, 'year');
+    }
+
+    // Create cron pattern in user's local timezone
+    const pattern = `0 ${nextBirthdayLocal.minute()} ${nextBirthdayLocal.hour()} ${nextBirthdayLocal.date()} ${nextBirthdayLocal.month() + 1} *`;
 
     await this.schedulerQueue.upsertJobScheduler(
       `birthday-${user.id}`,
-      { pattern, },
+      {
+        pattern,
+        tz: user.timezone
+      },
       {
         name: 'send-birthday-message',
         data: {
           userId: user.id,
           email: user.email,
           name: `${user.firstname} ${user.lastname}`,
+          userTimezone: user.timezone // Store timezone for reference
         },
         opts: {
           priority: 1,
@@ -33,8 +45,7 @@ export class SchedulerService {
       }
     );
 
-
-    console.log(`✅ Job berhasil ditambahkan ke queue!`); // Debug log
+    console.log(`✅ Birthday job scheduled for user ${user.id} at ${birthdayTime} ${user.timezone}`);
   }
 
   async cancelBirthdayScheduler(userId: number) {
